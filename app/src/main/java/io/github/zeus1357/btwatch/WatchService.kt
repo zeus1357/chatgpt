@@ -160,7 +160,8 @@ class WatchService : Service() {
             .setContentTitle("블루투스 파일 수신 감지")
             .setContentText("$name (${Formatter.formatFileSize(this, size)})")
             .setStyle(Notification.BigTextStyle().bigText("$name (${Formatter.formatFileSize(this, size)})\n$path"))
-            .setContentIntent(openAppIntent())
+            .setContentIntent(sendToClaudeIntent(id, path) ?: openAppIntent())
+            .setSubText(if (path.isNotEmpty()) "누르면 Claude 대화창에 첨부" else null)
             .setAutoCancel(true)
             .build()
         getSystemService(NotificationManager::class.java).notify(id.toInt(), notification)
@@ -199,6 +200,15 @@ class WatchService : Service() {
             .setContentIntent(openAppIntent())
             .setOngoing(true)
             .build()
+
+    /** 알림을 누르면 받은 파일을 Claude 앱 대화창에 첨부한다. */
+    private fun sendToClaudeIntent(id: Long, path: String): PendingIntent? {
+        if (path.isEmpty()) return null
+        return PendingIntent.getActivity(
+            this, id.toInt(), ShareActivity.intent(this, path),
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+        )
+    }
 
     private fun openAppIntent(): PendingIntent =
         PendingIntent.getActivity(

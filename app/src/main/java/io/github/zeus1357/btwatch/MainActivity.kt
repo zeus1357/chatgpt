@@ -23,7 +23,7 @@ class MainActivity : Activity() {
     private lateinit var status: TextView
     private lateinit var permissionButton: Button
     private lateinit var toggleButton: Button
-    private lateinit var logView: TextView
+    private lateinit var logContainer: LinearLayout
 
     private val prefsListener = SharedPreferences.OnSharedPreferenceChangeListener { _, _ -> refresh() }
 
@@ -41,8 +41,8 @@ class MainActivity : Activity() {
             text = "기록 지우기"
             setOnClickListener { EventLog.clear(this@MainActivity) }
         }
-        logView = TextView(this).apply {
-            setTextIsSelectable(true)
+        logContainer = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
             setPadding(0, pad, 0, 0)
         }
 
@@ -54,7 +54,7 @@ class MainActivity : Activity() {
             addView(permissionButton)
             addView(toggleButton)
             addView(clearButton)
-            addView(logView)
+            addView(logContainer)
         }
         setContentView(ScrollView(this).apply { addView(column) })
 
@@ -121,12 +121,21 @@ class MainActivity : Activity() {
         }
 
         val entries = EventLog.entries(this)
-        logView.text = if (entries.isEmpty()) {
-            "아직 감지된 파일이 없습니다."
-        } else {
-            entries.joinToString("\n\n") { e ->
-                val time = DateFormat.format("yyyy-MM-dd HH:mm:ss", Date(e.timeMillis))
-                "$time\n${e.name} (${Formatter.formatFileSize(this, e.size)})\n${e.path}"
+        logContainer.removeAllViews()
+        if (entries.isEmpty()) {
+            logContainer.addView(TextView(this).apply { text = "아직 감지된 파일이 없습니다." })
+        }
+        for (e in entries) {
+            val time = DateFormat.format("yyyy-MM-dd HH:mm:ss", Date(e.timeMillis))
+            logContainer.addView(TextView(this).apply {
+                text = "$time\n${e.name} (${Formatter.formatFileSize(this@MainActivity, e.size)})\n${e.path}"
+                setTextIsSelectable(true)
+            })
+            if (e.path.isNotEmpty()) {
+                logContainer.addView(Button(this).apply {
+                    text = "Claude로 보내기"
+                    setOnClickListener { startActivity(ShareActivity.intent(this@MainActivity, e.path)) }
+                })
             }
         }
     }
