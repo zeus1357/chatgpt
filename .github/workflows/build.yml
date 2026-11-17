@@ -1,11 +1,34 @@
-name: Build APK
+name: Build
 
 on:
   push:
   workflow_dispatch:
 
 jobs:
-  build:
+  sender:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Sender protocol tests
+        run: node --test sender/protocol.test.js
+
+  ios:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Generate Xcode project
+        run: |
+          brew install xcodegen
+          cd ios && xcodegen generate
+      - name: Build and test on simulator
+        run: |
+          cd ios
+          SIM=$(xcrun simctl list devices available | grep -m1 -oE 'iPhone [^(]+' | sed 's/ *$//')
+          echo "Using simulator: $SIM"
+          xcodebuild test -project BtFileWatch.xcodeproj -scheme BtFileWatch \
+            -destination "platform=iOS Simulator,name=$SIM" CODE_SIGNING_ALLOWED=NO
+
+  android:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

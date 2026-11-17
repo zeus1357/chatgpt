@@ -1,0 +1,41 @@
+name: BtFileWatch
+options:
+  bundleIdPrefix: io.github.zeus1357
+  deploymentTarget:
+    iOS: "16.0"
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
+targets:
+  BtFileWatch:
+    type: application
+    platform: iOS
+    sources: [BtFileWatch]
+    info:
+      path: BtFileWatch/Info.plist
+      properties:
+        CFBundleDisplayName: 블루투스 파일 감지
+        NSBluetoothAlwaysUsageDescription: 다른 기기가 블루투스로 보내는 파일을 받기 위해 사용합니다.
+        UIBackgroundModes: [bluetooth-peripheral]
+        UIFileSharingEnabled: true
+        LSSupportsOpeningDocumentsInPlace: true
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: io.github.zeus1357.btfilewatch
+        TARGETED_DEVICE_FAMILY: "1,2"
+    scheme:
+      testTargets: [BtFileWatchTests]
+  BtFileWatchTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources: [BtFileWatchTests]
+    dependencies:
+      - target: BtFileWatch
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: io.github.zeus1357.btfilewatch.tests
